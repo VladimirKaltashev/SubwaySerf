@@ -1,11 +1,11 @@
 // Game.ts - Основной класс игры Subway Surfers
 
-import { Player, Lane } from './entities/Player';
-import { Obstacle } from './entities/Obstacle';
-import { Coin } from './entities/Coin';
-import { World } from './world/World';
-import { Renderer } from './graphics/Renderer';
-import { InputHandler } from './input/InputHandler';
+import Player, { Lane } from './entities/Player';
+import Obstacle from './entities/Obstacle';
+import Coin from './entities/Coin';
+import World from './world/World';
+import Renderer from './graphics/Renderer';
+import InputHandler from './input/InputHandler';
 import CollisionSystem from './physics/CollisionSystem';
 
 export enum GameState {

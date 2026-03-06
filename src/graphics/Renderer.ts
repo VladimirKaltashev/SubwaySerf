@@ -1,8 +1,8 @@
 // Renderer.ts - Рендеринг для Subway Surfers
 
-import { Player, Lane } from '../entities/Player';
-import { Obstacle, ObstacleType } from '../entities/Obstacle';
-import { Coin } from '../entities/Coin';
+import Player, { Lane } from '../entities/Player';
+import Obstacle, { ObstacleType } from '../entities/Obstacle';
+import Coin from '../entities/Coin';
 
 export interface IRenderer {
     canvas: HTMLCanvasElement;
