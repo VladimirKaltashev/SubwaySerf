@@ -1,8 +1,19 @@
 class Game {
     constructor() {
-        // Initialize game
+        this.score = 0;
     }
+
     start() {
-        // Start the game loop
+        console.log('Game has started!');
+    }
+
+    updateScore(points) {
+        this.score += points;
+    }
+
+    getScore() {
+        return this.score;
     }
 }
+
+export default Game;
