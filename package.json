@@ -1,0 +1,27 @@
+{
+  "name": "subway-surfers-clone",
+  "version": "1.0.0",
+  "description": "A Subway Surfers clone game built with TypeScript and Canvas",
+  "main": "dist/bundle.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack serve --mode development --open",
+    "start": "npx http-server -p 8080"
+  },
+  "keywords": [
+    "game",
+    "subway-surfers",
+    "typescript",
+    "canvas"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1",
+    "http-server": "^14.1.1"
+  }
+}
