@@ -1,8 +1,8 @@
 // CollisionSystem.ts - Система коллизий для Subway Surfers
 
-import { Player } from '../entities/Player';
-import { Obstacle, ObstacleType } from '../entities/Obstacle';
-import { Coin } from '../entities/Coin';
+import Player from '../entities/Player';
+import Obstacle, { ObstacleType } from '../entities/Obstacle';
+import Coin from '../entities/Coin';
 
 export interface CollisionResult {
     collided: boolean;

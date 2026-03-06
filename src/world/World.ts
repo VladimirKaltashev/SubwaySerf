@@ -1,7 +1,7 @@
 // World.ts - Управление игровым миром для Subway Surfers
 
-import { Obstacle, ObstacleType } from '../entities/Obstacle';
-import { Coin } from '../entities/Coin';
+import Obstacle, { ObstacleType } from '../entities/Obstacle';
+import Coin from '../entities/Coin';
 
 export interface IWorld {
     speed: number;
