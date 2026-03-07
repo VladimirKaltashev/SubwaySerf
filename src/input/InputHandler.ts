@@ -1,4 +1,4 @@
-// InputHandler.ts - Обработка ввода для Subway Surfers
+import { Player } from '../entities/Player';
 
 export enum InputAction {
     MOVE_LEFT = 'move_left',
@@ -7,101 +7,101 @@ export enum InputAction {
     ROLL = 'roll'
 }
 
-export interface IInputHandler {
-    onMoveLeft: () => void;
-    onMoveRight: () => void;
-    onJump: () => void;
-    onRoll: () => void;
-}
+export class InputHandler {
+    private player: Player;
+    private onMoveLeft?: () => void;
+    private onMoveRight?: () => void;
+    private onJump?: () => void;
+    private onRoll?: () => void;
 
-class InputHandler implements IInputHandler {
-    public onMoveLeft: () => void;
-    public onMoveRight: () => void;
-    public onJump: () => void;
-    public onRoll: () => void;
-
-    private keysPressed: Set<string>;
-
-    constructor() {
-        this.keysPressed = new Set();
-        this.onMoveLeft = () => {};
-        this.onMoveRight = () => {};
-        this.onJump = () => {};
-        this.onRoll = () => {};
-
+    constructor(player: Player) {
+        this.player = player;
         this.setupKeyboardListeners();
+        this.setupTouchListeners();
     }
 
     private setupKeyboardListeners(): void {
-        document.addEventListener('keydown', (e) => {
-            if (this.keysPressed.has(e.code)) return;
-            this.keysPressed.add(e.code);
-
-            switch (e.code) {
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
                 case 'ArrowLeft':
-                case 'KeyA':
-                    this.onMoveLeft();
+                case 'a':
+                case 'A':
+                    this.player.slide('left', event.key === 'a' || event.key === 'A');
+                    if (this.onMoveLeft) this.onMoveLeft();
                     break;
                 case 'ArrowRight':
-                case 'KeyD':
-                    this.onMoveRight();
+                case 'd':
+                case 'D':
+                    this.player.slide('right', event.key === 'd' || event.key === 'D');
+                    if (this.onMoveRight) this.onMoveRight();
                     break;
                 case 'ArrowUp':
-                case 'KeyW':
-                case 'Space':
-                    this.onJump();
+                case 'w':
+                case 'W':
+                case ' ':
+                    this.player.jump();
+                    if (this.onJump) this.onJump();
                     break;
                 case 'ArrowDown':
-                case 'KeyS':
-                    this.onRoll();
+                case 's':
+                case 'S':
+                    this.player.roll();
+                    if (this.onRoll) this.onRoll();
                     break;
             }
         });
-
-        document.addEventListener('keyup', (e) => {
-            this.keysPressed.delete(e.code);
-        });
     }
 
-    public setupTouchControls(canvas: HTMLCanvasElement): void {
+    private setupTouchListeners(): void {
         let touchStartX: number = 0;
         let touchStartY: number = 0;
 
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        }, { passive: false });
+        document.addEventListener('touchstart', (event) => {
+            touchStartX = event.touches[0].clientX;
+            touchStartY = event.touches[0].clientY;
+        });
 
-        canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
+        document.addEventListener('touchend', (event) => {
+            const touchEndX = event.changedTouches[0].clientX;
+            const touchEndY = event.changedTouches[0].clientY;
+            
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
 
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            // Определяем направление свайпа
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                // Горизонтальный свайп
-                if (deltaX > 30) {
-                    this.onMoveRight();
-                } else if (deltaX < -30) {
-                    this.onMoveLeft();
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 30) {
+                    this.player.slide('right');
+                    if (this.onMoveRight) this.onMoveRight();
+                } else if (diffX < -30) {
+                    this.player.slide('left');
+                    if (this.onMoveLeft) this.onMoveLeft();
                 }
             } else {
-                // Вертикальный свайп
-                if (deltaY < -30) {
-                    this.onJump();
-                } else if (deltaY > 30) {
-                    this.onRoll();
+                if (diffY < -30) {
+                    this.player.jump();
+                    if (this.onJump) this.onJump();
+                } else if (diffY > 30) {
+                    this.player.roll();
+                    if (this.onRoll) this.onRoll();
                 }
             }
-        }, { passive: false });
+        });
     }
 
-    public destroy(): void {
-        // Очистка слушателей при необходимости
+    public setOnMoveLeft(callback: () => void): void {
+        this.onMoveLeft = callback;
+    }
+
+    public setOnMoveRight(callback: () => void): void {
+        this.onMoveRight = callback;
+    }
+
+    public setOnJump(callback: () => void): void {
+        this.onJump = callback;
+    }
+
+    public setOnRoll(callback: () => void): void {
+        this.onRoll = callback;
     }
 }
 

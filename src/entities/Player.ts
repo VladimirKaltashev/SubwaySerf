@@ -1,163 +1,90 @@
-// Player.ts - Игрок для Subway Surfers clone с 5 полосами
-
 export enum Lane {
-    LEFT = -2,
-    CENTER_LEFT = -1,
+    LEFT_FAR = -2,
+    LEFT = -1,
     CENTER = 0,
-    CENTER_RIGHT = 1,
-    RIGHT = 2
+    RIGHT = 1,
+    RIGHT_FAR = 2
 }
 
-export interface PlayerState {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    lane: Lane;
-    isJumping: boolean;
-    isRolling: boolean;
-    verticalVelocity: number;
-    jumpPower: number;
-    gravity: number;
-    groundY: number;
-    rollTimer: number;
-    rollDuration: number;
+export enum PlayerState {
+    RUNNING = 'running',
+    JUMPING = 'jumping',
+    ROLLING = 'rolling'
 }
 
-class Player {
-    public x: number;
-    public y: number;
-    public width: number;
-    public height: number;
-    public normalHeight: number;
-    public rollHeight: number;
-    public lane: Lane;
-    public isJumping: boolean;
-    public isRolling: boolean;
-    public verticalVelocity: number;
-    public jumpPower: number;
-    public gravity: number;
-    public groundY: number;
-    public rollTimer: number;
-    public rollDuration: number;
-    private score: number;
-    private coins: number;
+export class Player {
+    private lane: Lane = Lane.CENTER;
+    private state: PlayerState = PlayerState.RUNNING;
+    private yPosition: number = 0;
+    private verticalVelocity: number = 0;
+    private rollTimer: number = 0;
 
-    constructor(groundY: number = 400) {
-        this.width = 50;
-        this.normalHeight = 80;
-        this.rollHeight = 40;
-        this.height = this.normalHeight;
-        this.lane = Lane.CENTER;
-        this.isJumping = false;
-        this.isRolling = false;
-        this.verticalVelocity = 0;
-        this.jumpPower = -15;
-        this.gravity = 0.8;
-        this.groundY = groundY;
-        this.x = this.getLaneX(Lane.CENTER);
-        this.y = groundY - this.height;
-        this.rollTimer = 0;
-        this.rollDuration = 40; // frames
-        this.score = 0;
-        this.coins = 0;
-    }
+    private readonly JUMP_FORCE = 15;
+    private readonly GRAVITY = -40;
+    private readonly ROLL_DURATION = 0.6;
 
-    private getLaneX(lane: Lane): number {
-        const laneWidth = 100;
-        const centerX = 400;
-        return centerX + lane * laneWidth;
-    }
+    public update(deltaTime: number): void {
+        if (this.state === PlayerState.JUMPING) {
+            this.yPosition += this.verticalVelocity * deltaTime;
+            this.verticalVelocity += this.GRAVITY * deltaTime;
 
-    public moveLeft(): void {
-        if (this.lane > Lane.LEFT) {
-            this.lane--;
-            this.x = this.getLaneX(this.lane);
+            if (this.yPosition <= 0) {
+                this.yPosition = 0;
+                this.verticalVelocity = 0;
+                this.state = PlayerState.RUNNING;
+            }
         }
-    }
 
-    public moveRight(): void {
-        if (this.lane < Lane.RIGHT) {
-            this.lane++;
-            this.x = this.getLaneX(this.lane);
+        if (this.state === PlayerState.ROLLING) {
+            this.rollTimer -= deltaTime;
+            if (this.rollTimer <= 0) {
+                this.state = PlayerState.RUNNING;
+            }
         }
     }
 
     public jump(): void {
-        if (!this.isJumping && !this.isRolling) {
-            this.isJumping = true;
-            this.verticalVelocity = this.jumpPower;
+        if (this.state !== PlayerState.JUMPING) {
+            this.verticalVelocity = this.JUMP_FORCE;
+            this.state = PlayerState.JUMPING;
         }
     }
 
     public roll(): void {
-        if (!this.isRolling && !this.isJumping) {
-            this.isRolling = true;
-            this.height = this.rollHeight;
-            this.rollTimer = this.rollDuration;
-        } else if (this.isJumping) {
-            // Fast fall
-            this.verticalVelocity = 15;
+        if (this.state !== PlayerState.JUMPING && this.state !== PlayerState.ROLLING) {
+            this.state = PlayerState.ROLLING;
+            this.rollTimer = this.ROLL_DURATION;
+        } else if (this.state === PlayerState.JUMPING) {
+            this.verticalVelocity = -this.JUMP_FORCE;
         }
     }
 
-    public update(): void {
-        // Apply gravity
-        if (this.isJumping) {
-            this.verticalVelocity += this.gravity;
-            this.y += this.verticalVelocity;
+    public slide(direction: 'left' | 'right', far: boolean = false): void {
+        const currentLaneValue = this.lane;
+        const change = far ? 2 : 1;
+        const newLaneValue = direction === 'left' 
+            ? currentLaneValue - change 
+            : currentLaneValue + change;
 
-            // Check if landed
-            if (this.y >= this.groundY - this.height) {
-                this.y = this.groundY - this.height;
-                this.isJumping = false;
-                this.verticalVelocity = 0;
-            }
+        if (newLaneValue >= Lane.LEFT_FAR && newLaneValue <= Lane.RIGHT_FAR) {
+            this.lane = newLaneValue as Lane;
         }
-
-        // Handle rolling
-        if (this.isRolling) {
-            this.rollTimer--;
-            if (this.rollTimer <= 0) {
-                this.isRolling = false;
-                this.height = this.normalHeight;
-                this.y = this.groundY - this.height;
-            }
-        }
-
-        // Smooth lane transition
-        const targetX = this.getLaneX(this.lane);
-        this.x += (targetX - this.x) * 0.3;
     }
 
-    public increaseScore(points: number): void {
-        this.score += points;
+    public getLane(): Lane {
+        return this.lane;
     }
 
-    public collectCoin(): void {
-        this.coins++;
-        this.score += 10;
+    public getState(): PlayerState {
+        return this.state;
     }
 
-    public getScore(): number {
-        return this.score;
+    public getYPosition(): number {
+        return this.yPosition;
     }
 
-    public getCoins(): number {
-        return this.coins;
-    }
-
-    public reset(groundY: number = 400): void {
-        this.lane = Lane.CENTER;
-        this.isJumping = false;
-        this.isRolling = false;
-        this.verticalVelocity = 0;
-        this.height = this.normalHeight;
-        this.x = this.getLaneX(Lane.CENTER);
-        this.y = groundY - this.height;
-        this.rollTimer = 0;
-        this.score = 0;
-        this.coins = 0;
+    public isRolling(): boolean {
+        return this.state === PlayerState.ROLLING;
     }
 }
 
