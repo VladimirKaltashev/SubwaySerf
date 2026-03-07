@@ -18,7 +18,7 @@ export class Coin {
     constructor(id: number, lane: number, groundY: number) {
         this.id = id;
         this.lane = lane;
-        this.x = lane * 100 + 400; // Центрирование на полосе
+        this.x = lane * 100 + 400;
         this.y = groundY - 30;
         this.collected = false;
     }
