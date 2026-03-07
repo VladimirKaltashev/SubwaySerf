@@ -70,7 +70,7 @@ class Renderer implements IRenderer {
         this.context.fill();
 
         // Тело игрока
-        if (player.isSliding) {
+        if (player.isRolling) {
             // Приседание
             this.context.fillStyle = '#FF6B6B';
             this.context.fillRect(player.x, player.y, player.width, player.height);

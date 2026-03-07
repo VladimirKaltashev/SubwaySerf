@@ -47,7 +47,7 @@ class CollisionSystem {
 
         // Для высоких барьеров проверяем только если игрок не присел
         if (obstacle.type === ObstacleType.BARRIER_HIGH) {
-            if (player.isSliding) {
+            if (player.isRolling) {
                 return false; // Игрок подкатился под барьер
             }
         }
