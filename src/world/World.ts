@@ -4,7 +4,7 @@ import Obstacle, { ObstacleType } from '../entities/Obstacle';
 import Coin from '../entities/Coin';
 import { Lane } from '../entities/Player';
 
-export interface IWorld {
+export class World {
     speed: number;
     distance: number;
     obstacles: Obstacle[];
