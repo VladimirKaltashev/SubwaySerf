@@ -1,3 +1,3 @@
-export { Player, PlayerState, Lane } from './Player';
-export { Obstacle, ObstacleType, IObstacle } from './Obstacle';
-export { Coin, ICoin } from './Coin';
+export { default as Player, Lane, PlayerState } from './Player';
+export { default as Obstacle, ObstacleType, IObstacle } from './Obstacle';
+export { default as Coin, ICoin } from './Coin';

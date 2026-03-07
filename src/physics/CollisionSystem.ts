@@ -1,145 +1,50 @@
-// CollisionSystem.ts - Система коллизий для Subway Surfers
-
-import { Player } from '../entities/Player';
-import Obstacle, { ObstacleType } from '../entities/Obstacle';
+import Player from '../entities/Player';
+import Obstacle from '../entities/Obstacle';
 import Coin from '../entities/Coin';
 
 export interface CollisionResult {
-    collided: boolean;
-    type?: 'obstacle' | 'coin';
-    object?: Obstacle | Coin;
+    type: 'obstacle' | 'coin';
+    object: Obstacle | Coin;
 }
 
-class CollisionSystem {
-    private static instance: CollisionSystem;
+export class CollisionSystem {
+    public checkCollisions(player: Player, obstacles: Obstacle[], coins: Coin[]): CollisionResult[] {
+        const results: CollisionResult[] = [];
+        const playerRect = this.getPlayerRect(player);
 
-    private constructor() {}
-
-    public static getInstance(): CollisionSystem {
-        if (!CollisionSystem.instance) {
-            CollisionSystem.instance = new CollisionSystem();
-        }
-        return CollisionSystem.instance;
-    }
-
-    /**
-     * Проверка AABB коллизии между двумя объектами
-     */
-    public checkAABB(
-        obj1: { x: number; y: number; width: number; height: number },
-        obj2: { x: number; y: number; width: number; height: number }
-    ): boolean {
-        return (
-            obj1.x < obj2.x + obj2.width &&
-            obj1.x + obj1.width > obj2.x &&
-            obj1.y < obj2.y + obj2.height &&
-            obj1.y + obj1.height > obj2.y
-        );
-    }
-
-    /**
-     * Проверка коллизии игрока с препятствием
-     */
-    public checkPlayerObstacleCollision(player: Player, obstacle: Obstacle): boolean {
-        // Получаем хитбоксы
-        const playerBounds = this.getPlayerBounds(player);
-        const obstacleBounds = obstacle.getBounds();
-
-        // Для высоких барьеров проверяем только если игрок не присел
-        if (obstacle.type === ObstacleType.BARRIER_HIGH) {
-            if (player.isRolling) {
-                return false; // Игрок подкатился под барьер
+        obstacles.forEach(obs => {
+            const obsRect = { x: obs.x - 30, y: 400 - (obs.type === 'train' ? 80 : 40), width: 60, height: obs.type === 'train' ? 80 : 40 };
+            if (this.rectIntersect(playerRect, obsRect)) {
+                results.push({ type: 'obstacle', object: obs });
             }
-        }
+        });
 
-        // Для низких барьеров проверяем только если игрок не прыгает достаточно высоко
-        if (obstacle.type === ObstacleType.BARRIER_LOW) {
-            if (player.isJumping && player.y < obstacle.y - player.height) {
-                return false; // Игрок перепрыгнул барьер
+        coins.forEach(coin => {
+            const coinRect = { x: coin.x - 15, y: coin.y - 15, width: 30, height: 30 };
+            if (this.rectIntersect(playerRect, coinRect)) {
+                results.push({ type: 'coin', object: coin });
             }
-        }
+        });
 
-        return this.checkAABB(playerBounds, obstacleBounds);
+        return results;
     }
 
-    /**
-     * Проверка коллизии игрока с монетой
-     */
-    public checkPlayerCoinCollision(player: Player, coin: Coin): boolean {
-        if (coin.collected) return false;
-
-        const playerBounds = this.getPlayerBounds(player);
-        const coinBounds = coin.getBounds();
-
-        // Уменьшаем хитбокс монеты для более честной коллизии
-        const reducedCoinBounds = {
-            x: coinBounds.x + 5,
-            y: coinBounds.y + 5,
-            width: coinBounds.width - 10,
-            height: coinBounds.height - 10
-        };
-
-        return this.checkAABB(playerBounds, reducedCoinBounds);
-    }
-
-    /**
-     * Получение хитбокса игрока с учетом состояния
-     */
-    private getPlayerBounds(player: Player): { x: number; y: number; width: number; height: number } {
-        // Добавляем небольшой отступ для более честной коллизии
-        const padding = 5;
+    private getPlayerRect(player: Player): { x: number, y: number, width: number, height: number } {
+        const laneWidth = 100;
+        const x = this.canvasCenter() + player.getLane() * laneWidth - 25;
+        const y = 400 - player.getYPosition() - (player.isRolling() ? 50 : 100);
         return {
-            x: player.x + padding,
-            y: player.y + padding,
-            width: player.width - padding * 2,
-            height: player.height - padding * 2
+            x: x,
+            y: y,
+            width: player.isRolling() ? 50 : 50,
+            height: player.isRolling() ? 50 : 100
         };
     }
 
-    /**
-     * Проверка всех коллизий и возврат результата
-     */
-    public checkAllCollisions(
-        player: Player,
-        obstacles: Obstacle[],
-        coins: Coin[]
-    ): { 
-        hitObstacle: boolean;
-        collectedCoins: number[];
-    } {
-        const result = {
-            hitObstacle: false,
-            collectedCoins: [] as number[]
-        };
+    private canvasCenter(): number { return 400; } // Половина ширины канваса
 
-        // Проверка препятствий
-        for (let i = 0; i < obstacles.length; i++) {
-            if (this.checkPlayerObstacleCollision(player, obstacles[i])) {
-                result.hitObstacle = true;
-                break;
-            }
-        }
-
-        // Проверка монет
-        for (let i = 0; i < coins.length; i++) {
-            if (this.checkPlayerCoinCollision(player, coins[i])) {
-                result.collectedCoins.push(i);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Проверка, находится ли игрок в той же полосе, что и объект
-     */
-    public checkLaneCollision(player: Player, lane: number): boolean {
-        const laneWidth = 120;
-        const centerX = 400;
-        const objectX = centerX + (lane - 1) * laneWidth;
-        
-        // Проверяем, находится ли игрок близко к центру полосы
-        return Math.abs(player.x - objectX) < laneWidth / 2;
+    private rectIntersect(r1: any, r2: any): boolean {
+        return !(r2.x > r1.x + r1.width || r2.x + r2.width < r1.x || r2.y > r1.y + r1.height || r2.y + r2.height < r1.y);
     }
 }
 

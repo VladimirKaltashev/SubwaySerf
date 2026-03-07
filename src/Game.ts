@@ -1,8 +1,8 @@
-import { Player, PlayerState, Lane } from './entities/Player';
-import { World } from './world/World';
-import { Renderer } from './graphics/Renderer';
-import { InputHandler } from './input/InputHandler';
-import { CollisionSystem } from './physics/CollisionSystem';
+import { Player } from './entities/Player';
+import World from './world/World';
+import Renderer from './graphics/Renderer';
+import InputHandler from './input/InputHandler';
+import CollisionSystem from './physics/CollisionSystem';
 
 export enum GameState {
     MENU = 'menu',
@@ -31,27 +31,21 @@ export class Game {
         this.ctx = this.canvas.getContext('2d')!;
 
         this.player = new Player();
-        this.world = new World();
+        this.world = new World(400);
         this.renderer = new Renderer(this.canvas);
         this.inputHandler = new InputHandler(this.player);
         this.collisionSystem = new CollisionSystem();
 
         this.setupInputHandlers();
-        
         requestAnimationFrame((time) => this.gameLoop(time));
     }
 
     private setupInputHandlers(): void {
-        this.inputHandler.setOnJump(() => {
-            if (this.state === GameState.MENU) {
-                this.startGame();
-            }
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === ' ' && this.state === GameState.GAME_OVER) {
-                this.restartGame();
-            }
+        this.inputHandler.onJump = () => {
+            if (this.state === GameState.MENU) this.startGame();
+        };
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && this.state === GameState.GAME_OVER) this.restartGame();
         });
     }
 
@@ -66,38 +60,31 @@ export class Game {
         this.setupInputHandlers();
     }
 
-    private restartGame(): void {
-        this.startGame();
-    }
+    private restartGame(): void { this.startGame(); }
 
     private gameLoop(currentTime: number): void {
         const deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
-
         this.update(deltaTime);
         this.render();
-
         requestAnimationFrame((time) => this.gameLoop(time));
     }
 
     private update(deltaTime: number): void {
         if (this.state !== GameState.PLAYING) return;
-
         this.player.update(deltaTime);
         this.world.update(deltaTime, this.gameSpeed);
-
-        const collisions = this.collisionSystem.checkCollisions(this.player, this.world.getObstacles(), this.world.getCoins());
         
-        for (const collision of collisions) {
-            if (collision.type === 'obstacle') {
+        const collisions = this.collisionSystem.checkCollisions(this.player, this.world.getObstacles(), this.world.getCoins());
+        for (const c of collisions) {
+            if (c.type === 'obstacle') {
                 this.state = GameState.GAME_OVER;
-            } else if (collision.type === 'coin') {
+            } else if (c.type === 'coin') {
                 this.coins++;
                 this.score += 10;
-                this.world.removeCoin(collision.object.id);
+                this.world.removeCoin((c.object as Coin).id);
             }
         }
-
         this.score += Math.floor(this.gameSpeed * deltaTime);
         this.gameSpeed += 0.001;
     }
@@ -106,17 +93,9 @@ export class Game {
         this.renderer.render(this.state, this.player, this.world, this.score, this.coins);
     }
 
-    public getState(): GameState {
-        return this.state;
-    }
-
-    public getScore(): number {
-        return this.score;
-    }
-
-    public getCoins(): number {
-        return this.coins;
-    }
+    public getState(): GameState { return this.state; }
+    public getScore(): number { return this.score; }
+    public getCoins(): number { return this.coins; }
 }
 
 export default Game;

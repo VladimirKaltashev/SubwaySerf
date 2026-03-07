@@ -27,19 +27,15 @@ export class Player {
         if (this.state === PlayerState.JUMPING) {
             this.yPosition += this.verticalVelocity * deltaTime;
             this.verticalVelocity += this.GRAVITY * deltaTime;
-
             if (this.yPosition <= 0) {
                 this.yPosition = 0;
                 this.verticalVelocity = 0;
                 this.state = PlayerState.RUNNING;
             }
         }
-
         if (this.state === PlayerState.ROLLING) {
             this.rollTimer -= deltaTime;
-            if (this.rollTimer <= 0) {
-                this.state = PlayerState.RUNNING;
-            }
+            if (this.rollTimer <= 0) this.state = PlayerState.RUNNING;
         }
     }
 
@@ -51,62 +47,33 @@ export class Player {
     }
 
     public roll(): void {
-        if (this.state !== PlayerState.JUMPING && this.state !== PlayerState.ROLLING) {
+        if (this.state === PlayerState.JUMPING) {
+            this.verticalVelocity = -this.JUMP_FORCE;
+        } else if (this.state !== PlayerState.ROLLING) {
             this.state = PlayerState.ROLLING;
             this.rollTimer = this.ROLL_DURATION;
-        } else if (this.state === PlayerState.JUMPING) {
-            this.verticalVelocity = -this.JUMP_FORCE;
         }
     }
 
     public slide(direction: 'left' | 'right', far: boolean = false): void {
-        const currentLaneValue = this.lane;
         const change = far ? 2 : 1;
-        const newLaneValue = direction === 'left' 
-            ? currentLaneValue - change 
-            : currentLaneValue + change;
-
-        if (newLaneValue >= Lane.LEFT_FAR && newLaneValue <= Lane.RIGHT_FAR) {
-            this.lane = newLaneValue as Lane;
+        const newLane = direction === 'left' ? this.lane - change : this.lane + change;
+        if (newLane >= Lane.LEFT_FAR && newLane <= Lane.RIGHT_FAR) {
+            this.lane = newLane as Lane;
         }
     }
 
-    public getLane(): Lane {
-        return this.lane;
-    }
-
-    public getState(): PlayerState {
-        return this.state;
-    }
-
-    public getYPosition(): number {
-        return this.yPosition;
-    }
-
-    public isRolling(): boolean {
-        return this.state === PlayerState.ROLLING;
-    }
-
-    public isJumping(): boolean {
-        return this.state === PlayerState.JUMPING;
-    }
-
-    // Для совместимости с Renderer и CollisionSystem
-    public get x(): number {
-        return this.getLane() * 100; // Условная координата
-    }
-
-    public get y(): number {
-        return this.yPosition;
-    }
-
-    public get width(): number {
-        return this.isRolling() ? 80 : 100;
-    }
-
-    public get height(): number {
-        return this.isRolling() ? 50 : 100;
-    }
+    public getLane(): Lane { return this.lane; }
+    public getState(): PlayerState { return this.state; }
+    public getYPosition(): number { return this.yPosition; }
+    public isRolling(): boolean { return this.state === PlayerState.ROLLING; }
+    public isJumping(): boolean { return this.state === PlayerState.JUMPING; }
+    
+    // Геттеры для совместимости
+    public get x(): number { return this.lane * 100; }
+    public get y(): number { return this.yPosition; }
+    public get width(): number { return this.isRolling() ? 80 : 100; }
+    public get height(): number { return this.isRolling() ? 50 : 100; }
 }
 
 export default Player;

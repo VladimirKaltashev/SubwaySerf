@@ -1,105 +1,75 @@
+import Player from '../entities/Player';
+
 export enum InputAction {
-  MOVE_LEFT,
-  MOVE_RIGHT,
-  JUMP,
-  ROLL
+    MOVE_LEFT = 'move_left',
+    MOVE_RIGHT = 'move_right',
+    JUMP = 'jump',
+    ROLL = 'roll'
 }
 
-export interface IInputHandler {
-  onMoveLeft: (() => void) | null;
-  onMoveRight: (() => void) | null;
-  onJump: (() => void) | null;
-  onRoll: (() => void) | null;
-  
-  handleKey(key: string, isPressed: boolean): void;
-  setupTouchControls(canvas: HTMLCanvasElement): void;
-}
+export class InputHandler {
+    private player: Player;
+    public onMoveLeft?: () => void;
+    public onMoveRight?: () => void;
+    public onJump?: () => void;
+    public onRoll?: () => void;
 
-export class InputHandler implements IInputHandler {
-  onMoveLeft: (() => void) | null = null;
-  onMoveRight: (() => void) | null = null;
-  onJump: (() => void) | null = null;
-  onRoll: (() => void) | null = null;
-  
-  private touchStartX: number = 0;
-  private touchStartY: number = 0;
-  
-  constructor() {
-    this.setupKeyboardListeners();
-  }
-  
-  private setupKeyboardListeners(): void {
-    window.addEventListener('keydown', (e) => {
-      this.handleKey(e.code, true);
-    });
-    
-    window.addEventListener('keyup', (e) => {
-      this.handleKey(e.code, false);
-    });
-  }
-  
-  handleKey(key: string, isPressed: boolean): void {
-    if (!isPressed) return;
-    
-    switch (key) {
-      case 'ArrowLeft':
-      case 'KeyA':
-        if (this.onMoveLeft) this.onMoveLeft();
-        break;
-        
-      case 'ArrowRight':
-      case 'KeyD':
-        if (this.onMoveRight) this.onMoveRight();
-        break;
-        
-      case 'ArrowUp':
-      case 'KeyW':
-      case 'Space':
-        if (this.onJump) this.onJump();
-        break;
-        
-      case 'ArrowDown':
-      case 'KeyS':
-        if (this.onRoll) this.onRoll();
-        break;
+    constructor(player: Player) {
+        this.player = player;
+        this.setupKeyboard();
+        this.setupTouch();
     }
-  }
-  
-  setupTouchControls(canvas: HTMLCanvasElement): void {
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      this.touchStartX = touch.clientX;
-      this.touchStartY = touch.clientY;
-    }, { passive: false });
-    
-    canvas.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      const touch = e.changedTouches[0];
-      const deltaX = touch.clientX - this.touchStartX;
-      const deltaY = touch.clientY - this.touchStartY;
-      
-      const minSwipeDistance = 30;
-      
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        // Горизонтальный свайп
-        if (Math.abs(deltaX) > minSwipeDistance) {
-          if (deltaX > 0) {
-            if (this.onMoveRight) this.onMoveRight();
-          } else {
-            if (this.onMoveLeft) this.onMoveLeft();
-          }
-        }
-      } else {
-        // Вертикальный свайп
-        if (Math.abs(deltaY) > minSwipeDistance) {
-          if (deltaY < 0) {
-            if (this.onJump) this.onJump();
-          } else {
-            if (this.onRoll) this.onRoll();
-          }
-        }
-      }
-    }, { passive: false });
-  }
+
+    private setupKeyboard(): void {
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    this.player.slide('left', e.key === 'a' || e.key === 'A');
+                    this.onMoveLeft?.();
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    this.player.slide('right', e.key === 'd' || e.key === 'D');
+                    this.onMoveRight?.();
+                    break;
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                case ' ':
+                    this.player.jump();
+                    this.onJump?.();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    this.player.roll();
+                    this.onRoll?.();
+                    break;
+            }
+        });
+    }
+
+    private setupTouch(): void {
+        let startX = 0, startY = 0;
+        document.addEventListener('touchstart', e => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+        document.addEventListener('touchend', e => {
+            const diffX = e.changedTouches[0].clientX - startX;
+            const diffY = e.changedTouches[0].clientY - startY;
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 30) { this.player.slide('right'); this.onMoveRight?.(); }
+                else if (diffX < -30) { this.player.slide('left'); this.onMoveLeft?.(); }
+            } else {
+                if (diffY < -30) { this.player.jump(); this.onJump?.(); }
+                else if (diffY > 30) { this.player.roll(); this.onRoll?.(); }
+            }
+        });
+    }
 }
+
+export default InputHandler;
