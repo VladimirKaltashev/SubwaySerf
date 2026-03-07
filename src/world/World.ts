@@ -2,6 +2,7 @@
 
 import Obstacle, { ObstacleType } from '../entities/Obstacle';
 import Coin from '../entities/Coin';
+import { Lane } from '../entities/Player';
 
 export interface IWorld {
     speed: number;
@@ -72,7 +73,9 @@ class World implements IWorld {
     }
 
     private spawnObstacle(): void {
-        const lane = Math.floor(Math.random() * 3); // 0, 1, или 2
+        // Используем 3 полосы как в Subway Surfers: LEFT, CENTER, RIGHT
+        const lanes = [Lane.LEFT, Lane.CENTER, Lane.RIGHT];
+        const lane = lanes[Math.floor(Math.random() * lanes.length)];
         const types = [
             ObstacleType.BARRIER_LOW,
             ObstacleType.BARRIER_HIGH,
@@ -96,8 +99,9 @@ class World implements IWorld {
     }
 
     private spawnCoins(): void {
-        // Спавним линию монет в случайной полосе
-        const lane = Math.floor(Math.random() * 3);
+        // Спавним линию монет в случайной полосе из 3 основных
+        const lanes = [Lane.LEFT, Lane.CENTER, Lane.RIGHT];
+        const lane = lanes[Math.floor(Math.random() * lanes.length)];
         const startY = 470;
         
         // Создаем линию из 3-5 монет

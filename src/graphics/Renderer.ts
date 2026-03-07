@@ -44,14 +44,14 @@ class Renderer implements IRenderer {
         this.context.fillStyle = '#654321';
         this.context.fillRect(0, 500, this.width, 100);
         
-        // Разметка дороги
+        // Разметка дороги - 5 полос
         this.context.strokeStyle = '#FFFFFF';
         this.context.setLineDash([20, 20]);
         this.context.lineWidth = 2;
         
-        // Линии между полосами
-        const lanePositions = [280, 400, 520];
-        for (let i = 1; i < lanePositions.length; i++) {
+        // Линии между полосами (для 5 полос нужно 4 разделителя)
+        const lanePositions = [350, 400, 450, 500];
+        for (let i = 0; i < lanePositions.length; i++) {
             this.context.beginPath();
             this.context.moveTo(lanePositions[i], 500);
             this.context.lineTo(lanePositions[i], 600);
