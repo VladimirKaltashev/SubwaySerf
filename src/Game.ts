@@ -69,9 +69,9 @@ class Game {
             }
         };
 
-        this.inputHandler.onSlide = () => {
+        this.inputHandler.onRoll = () => {
             if (this.gameState === GameState.PLAYING) {
-                this.player.slide();
+                this.player.roll();
             }
         };
 

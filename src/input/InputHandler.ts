@@ -4,21 +4,21 @@ export enum InputAction {
     MOVE_LEFT = 'move_left',
     MOVE_RIGHT = 'move_right',
     JUMP = 'jump',
-    SLIDE = 'slide'
+    ROLL = 'roll'
 }
 
 export interface IInputHandler {
     onMoveLeft: () => void;
     onMoveRight: () => void;
     onJump: () => void;
-    onSlide: () => void;
+    onRoll: () => void;
 }
 
 class InputHandler implements IInputHandler {
     public onMoveLeft: () => void;
     public onMoveRight: () => void;
     public onJump: () => void;
-    public onSlide: () => void;
+    public onRoll: () => void;
 
     private keysPressed: Set<string>;
 
@@ -27,7 +27,7 @@ class InputHandler implements IInputHandler {
         this.onMoveLeft = () => {};
         this.onMoveRight = () => {};
         this.onJump = () => {};
-        this.onSlide = () => {};
+        this.onRoll = () => {};
 
         this.setupKeyboardListeners();
     }
@@ -53,7 +53,7 @@ class InputHandler implements IInputHandler {
                     break;
                 case 'ArrowDown':
                 case 'KeyS':
-                    this.onSlide();
+                    this.onRoll();
                     break;
             }
         });
@@ -94,7 +94,7 @@ class InputHandler implements IInputHandler {
                 if (deltaY < -30) {
                     this.onJump();
                 } else if (deltaY > 30) {
-                    this.onSlide();
+                    this.onRoll();
                 }
             }
         }, { passive: false });

@@ -1,11 +1,11 @@
-// Player.ts - Игрок для Subway Surfers clone
+// Player.ts - Игрок для Subway Surfers clone с 5 полосами
 
 export enum Lane {
-    LEFT = 0,
-    CENTER_LEFT = 1,
-    CENTER = 2,
-    CENTER_RIGHT = 3,
-    RIGHT = 4
+    LEFT = -2,
+    CENTER_LEFT = -1,
+    CENTER = 0,
+    CENTER_RIGHT = 1,
+    RIGHT = 2
 }
 
 export interface PlayerState {
@@ -15,13 +15,13 @@ export interface PlayerState {
     height: number;
     lane: Lane;
     isJumping: boolean;
-    isSliding: boolean;
+    isRolling: boolean;
     verticalVelocity: number;
     jumpPower: number;
     gravity: number;
     groundY: number;
-    slideTimer: number;
-    slideDuration: number;
+    rollTimer: number;
+    rollDuration: number;
 }
 
 class Player {
@@ -30,35 +30,35 @@ class Player {
     public width: number;
     public height: number;
     public normalHeight: number;
-    public slideHeight: number;
+    public rollHeight: number;
     public lane: Lane;
     public isJumping: boolean;
-    public isSliding: boolean;
+    public isRolling: boolean;
     public verticalVelocity: number;
     public jumpPower: number;
     public gravity: number;
     public groundY: number;
-    public slideTimer: number;
-    public slideDuration: number;
+    public rollTimer: number;
+    public rollDuration: number;
     private score: number;
     private coins: number;
 
     constructor(groundY: number = 400) {
         this.width = 50;
         this.normalHeight = 80;
-        this.slideHeight = 40;
+        this.rollHeight = 40;
         this.height = this.normalHeight;
         this.lane = Lane.CENTER;
         this.isJumping = false;
-        this.isSliding = false;
+        this.isRolling = false;
         this.verticalVelocity = 0;
         this.jumpPower = -15;
         this.gravity = 0.8;
         this.groundY = groundY;
         this.x = this.getLaneX(Lane.CENTER);
         this.y = groundY - this.height;
-        this.slideTimer = 0;
-        this.slideDuration = 40; // frames
+        this.rollTimer = 0;
+        this.rollDuration = 40; // frames
         this.score = 0;
         this.coins = 0;
     }
@@ -66,7 +66,7 @@ class Player {
     private getLaneX(lane: Lane): number {
         const laneWidth = 100;
         const centerX = 400;
-        return centerX + (lane - Lane.CENTER) * laneWidth;
+        return centerX + lane * laneWidth;
     }
 
     public moveLeft(): void {
@@ -84,17 +84,17 @@ class Player {
     }
 
     public jump(): void {
-        if (!this.isJumping && !this.isSliding) {
+        if (!this.isJumping && !this.isRolling) {
             this.isJumping = true;
             this.verticalVelocity = this.jumpPower;
         }
     }
 
-    public slide(): void {
-        if (!this.isSliding && !this.isJumping) {
-            this.isSliding = true;
-            this.height = this.slideHeight;
-            this.slideTimer = this.slideDuration;
+    public roll(): void {
+        if (!this.isRolling && !this.isJumping) {
+            this.isRolling = true;
+            this.height = this.rollHeight;
+            this.rollTimer = this.rollDuration;
         } else if (this.isJumping) {
             // Fast fall
             this.verticalVelocity = 15;
@@ -115,11 +115,11 @@ class Player {
             }
         }
 
-        // Handle sliding
-        if (this.isSliding) {
-            this.slideTimer--;
-            if (this.slideTimer <= 0) {
-                this.isSliding = false;
+        // Handle rolling
+        if (this.isRolling) {
+            this.rollTimer--;
+            if (this.rollTimer <= 0) {
+                this.isRolling = false;
                 this.height = this.normalHeight;
                 this.y = this.groundY - this.height;
             }
@@ -150,12 +150,12 @@ class Player {
     public reset(groundY: number = 400): void {
         this.lane = Lane.CENTER;
         this.isJumping = false;
-        this.isSliding = false;
+        this.isRolling = false;
         this.verticalVelocity = 0;
         this.height = this.normalHeight;
         this.x = this.getLaneX(Lane.CENTER);
         this.y = groundY - this.height;
-        this.slideTimer = 0;
+        this.rollTimer = 0;
         this.score = 0;
         this.coins = 0;
     }
