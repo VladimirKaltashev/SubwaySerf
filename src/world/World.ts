@@ -43,13 +43,13 @@ export class World {
     private spawnObstacle(): void {
         const lane = Math.floor(Math.random() * 3) - 1;
         const type = Math.random() > 0.5 ? ObstacleType.BARRIER : ObstacleType.TRAIN;
-        this.obstacles.push(new Obstacle(900, this.groundY, lane, type));
+        this.obstacles.push(new Obstacle(900, this.groundY, lane, type, this.groundY));
     }
 
     private spawnCoins(): void {
         const lane = Math.floor(Math.random() * 3) - 1;
         for (let i = 0; i < 5; i++) {
-            this.coins.push(new Coin(900 + i * 60, this.groundY - 50, lane));
+            this.coins.push(new Coin(900 + i * 60, this.groundY - 50, lane, this.groundY));
         }
     }
 
