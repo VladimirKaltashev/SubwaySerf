@@ -1,108 +1,26 @@
-// InputHandler.ts - Обработка ввода для Subway Surfers
+import { Player } from '../entities/Player';
 
-export enum InputAction {
-    MOVE_LEFT = 'move_left',
-    MOVE_RIGHT = 'move_right',
-    JUMP = 'jump',
-    SLIDE = 'slide'
-}
+export class InputHandler {
+    private player: Player;
 
-export interface IInputHandler {
-    onMoveLeft: () => void;
-    onMoveRight: () => void;
-    onJump: () => void;
-    onSlide: () => void;
-}
-
-class InputHandler implements IInputHandler {
-    public onMoveLeft: () => void;
-    public onMoveRight: () => void;
-    public onJump: () => void;
-    public onSlide: () => void;
-
-    private keysPressed: Set<string>;
-
-    constructor() {
-        this.keysPressed = new Set();
-        this.onMoveLeft = () => {};
-        this.onMoveRight = () => {};
-        this.onJump = () => {};
-        this.onSlide = () => {};
-
-        this.setupKeyboardListeners();
-    }
-
-    private setupKeyboardListeners(): void {
-        document.addEventListener('keydown', (e) => {
-            if (this.keysPressed.has(e.code)) return;
-            this.keysPressed.add(e.code);
-
-            switch (e.code) {
+    constructor(player: Player) {
+        this.player = player;
+        
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
                 case 'ArrowLeft':
-                case 'KeyA':
-                    this.onMoveLeft();
+                    this.player.slide('left');
                     break;
                 case 'ArrowRight':
-                case 'KeyD':
-                    this.onMoveRight();
+                    this.player.slide('right');
                     break;
-                case 'ArrowUp':
-                case 'KeyW':
-                case 'Space':
-                    this.onJump();
+                case 'a':
+                    this.player.slide('left', true);
                     break;
-                case 'ArrowDown':
-                case 'KeyS':
-                    this.onSlide();
+                case 'd':
+                    this.player.slide('right', true);
                     break;
             }
         });
-
-        document.addEventListener('keyup', (e) => {
-            this.keysPressed.delete(e.code);
-        });
-    }
-
-    public setupTouchControls(canvas: HTMLCanvasElement): void {
-        let touchStartX: number = 0;
-        let touchStartY: number = 0;
-
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            // Определяем направление свайпа
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                // Горизонтальный свайп
-                if (deltaX > 30) {
-                    this.onMoveRight();
-                } else if (deltaX < -30) {
-                    this.onMoveLeft();
-                }
-            } else {
-                // Вертикальный свайп
-                if (deltaY < -30) {
-                    this.onJump();
-                } else if (deltaY > 30) {
-                    this.onSlide();
-                }
-            }
-        }, { passive: false });
-    }
-
-    public destroy(): void {
-        // Очистка слушателей при необходимости
     }
 }
-
-export default InputHandler;
