@@ -1,4 +1,5 @@
 import { Player } from './entities/Player';
+import { Coin } from './entities/Coin';
 import World from './world/World';
 import Renderer from './graphics/Renderer';
 import InputHandler from './input/InputHandler';
@@ -31,7 +32,7 @@ export class Game {
         this.ctx = this.canvas.getContext('2d')!;
 
         this.player = new Player();
-        this.world = new World(400);
+        this.world = new World();
         this.renderer = new Renderer(this.canvas);
         this.inputHandler = new InputHandler(this.player);
         this.collisionSystem = new CollisionSystem();
