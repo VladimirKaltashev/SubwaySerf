@@ -2,8 +2,10 @@
 
 export enum Lane {
     LEFT = 0,
-    CENTER = 1,
-    RIGHT = 2
+    CENTER_LEFT = 1,
+    CENTER = 2,
+    CENTER_RIGHT = 3,
+    RIGHT = 4
 }
 
 export interface PlayerState {
@@ -27,6 +29,8 @@ class Player {
     public y: number;
     public width: number;
     public height: number;
+    public normalHeight: number;
+    public slideHeight: number;
     public lane: Lane;
     public isJumping: boolean;
     public isSliding: boolean;
@@ -41,7 +45,9 @@ class Player {
 
     constructor(groundY: number = 400) {
         this.width = 50;
-        this.height = 80;
+        this.normalHeight = 80;
+        this.slideHeight = 40;
+        this.height = this.normalHeight;
         this.lane = Lane.CENTER;
         this.isJumping = false;
         this.isSliding = false;
@@ -58,7 +64,7 @@ class Player {
     }
 
     private getLaneX(lane: Lane): number {
-        const laneWidth = 120;
+        const laneWidth = 100;
         const centerX = 400;
         return centerX + (lane - Lane.CENTER) * laneWidth;
     }
@@ -87,7 +93,7 @@ class Player {
     public slide(): void {
         if (!this.isSliding && !this.isJumping) {
             this.isSliding = true;
-            this.height = 40;
+            this.height = this.slideHeight;
             this.slideTimer = this.slideDuration;
         } else if (this.isJumping) {
             // Fast fall
@@ -114,7 +120,7 @@ class Player {
             this.slideTimer--;
             if (this.slideTimer <= 0) {
                 this.isSliding = false;
-                this.height = 80;
+                this.height = this.normalHeight;
                 this.y = this.groundY - this.height;
             }
         }
@@ -146,6 +152,7 @@ class Player {
         this.isJumping = false;
         this.isSliding = false;
         this.verticalVelocity = 0;
+        this.height = this.normalHeight;
         this.x = this.getLaneX(Lane.CENTER);
         this.y = groundY - this.height;
         this.slideTimer = 0;
