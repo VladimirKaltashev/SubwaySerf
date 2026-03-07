@@ -1,43 +1,17 @@
-```gitignore
-# Compiled and build artifacts
-*.js
-*.tsbuildinfo
-dist/
-build/
-*.o
-*.obj
-*.out
-
+```
 # Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # Logs and temp files
 *.log
-*.tmp
-*.swp
-*.swo
 
 # Environment
 .env
 .env.local
-.env.*
+*.env.*
 
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# Coverage
-coverage/
-.nyc_output/
-istanbul/
-*.lcov
-
-# TypeScript
-*.d.ts
-*.map
 ```
